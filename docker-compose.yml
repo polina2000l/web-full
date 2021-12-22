@@ -1,0 +1,57 @@
+version: '3.9'
+
+services:
+  db:
+    container_name: db
+    image: mysql:5.7
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 'superpass321!'
+      MYSQL_DATABASE: 'web-db'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'pass321!'
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - web-network
+
+  backend:
+    container_name: backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: digitalocean.com/php
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+       - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - web-network
+
+  frontend:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - web-network
+
+volumes:
+  dbdata:
+    driver: local
+
+networks:
+  web-network:
+    driver: bridge
