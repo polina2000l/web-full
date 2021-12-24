@@ -2,37 +2,65 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
-
 use App\Models\User;
 
 class UserController extends Controller
 {
-    public function index()
-    {
-        $users = User::all();
+     public $arr = [];
 
-        return $users == null ? response()->json("", 403) : response()->json($users, 200);
-    }
+     public function init()
+     {
+         $this->arr = User::query()->get();
+     }
 
-    public function show($id)
-    {
-        $user = User::find($id);
 
-        return $user == null ? response()->json("", 403) : response()->json($user, 200);
-    }
+     /**
+     * Список пользователей.
+     * @return array[]
+     */
+     public function list()
+     {
+         $this->init();
+         //return $this->arr;
+     }
 
-    public function authorization(Request $request)
-    {
+     /**
+     * Информация о пользователе
+     * @param $id
+     * @return array
+     */
+     public function info($id)
+     {
+         $this->init();
+         return  $this->arr[$id-1];
+     }
+
+     public function authorization(Request $request)
+     {
         //$this->init();
-        $user = User::query()->where(['email' => $request->get('email')])->first();
-
-        if ($user == null) {
-            return response()->json("{\"message\": \"User not found\"}", 409);
+        $arr = [];
+        $arr = User::query()->where(['email' => $request->get('email')])->first();
+        if ($arr == NULL){
+            return [
+                    'userId'=> -1
+                ];
         }
-        
-        return $user['password'] == $request->get('password')
-            ? response()->json($user, 200)
-            : response()->json("{\"message\": \"Wrong password\"}", 409);   
-    }
+        else
+        {
+            if ($arr['password'] == $request->get('password')){
+                return [
+                            'userId'=> $arr['id']
+                       ];
+            }
+            else
+            {
+             return [
+                            'userId'=> -1
+                    ];
+            }
+        }
+
+     }
 }

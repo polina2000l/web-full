@@ -18,10 +18,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/user/{id}', [UserController::class, 'show']);
-Route::get('/users', [UserController::class, 'index']);
-
-Route::prefix('user')->group(function() {
+Route::prefix('user')->group(function(){
     Route::post('/', [\App\Http\Controllers\UserController::class, 'authorization']);
 });
 
